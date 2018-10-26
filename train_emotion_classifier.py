@@ -1,6 +1,8 @@
 from keras.layers import Dense, Flatten
 from keras.models import Sequential
 from keras.callbacks import Callback
+from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
+from keras.layers import Dropout
 import pandas as pd
 import numpy as np
 import cv2
@@ -53,8 +55,35 @@ train_faces /= 255.
 val_faces /= 255.
 
 model = Sequential()
-model.add(Flatten(input_shape=input_shape))
-model.add(Dense(num_classes, activation="softmax"))
+
+model.add(Convolution2D(48,
+    (2, 2),
+    activation='relu', input_shape=input_shape))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.3))
+model.add(ZeroPadding2D((1,1)))
+model.add(Convolution2D(96,
+    (2, 2), padding ='same',
+    activation='sigmoid'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+model.add(Dropout(0.4))
+
+#model.add(ZeroPadding2D((1,1)))
+model.add(Convolution2D(192,
+    (2, 2), padding ='same',
+    activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+model.add(Dropout(0.2))
+
+
+
+model.add(Dropout(0.4))
+model.add(Dense(num_classes, activation="sigmoid"))
+model.add(Dropout(0.4))
+model.add(Flatten())
+model.add(Dense(num_classes, activation="relu"))
 
 model.compile(optimizer='adam', loss='categorical_crossentropy',
 metrics=['accuracy'])
@@ -66,6 +95,3 @@ model.fit(train_faces, train_emotions, batch_size=config.batch_size,
 
 
 model.save("emotion.h5")
-
-
-
